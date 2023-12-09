@@ -22,6 +22,7 @@ name = "advent_of_code"
 version = "0.9.5"
 dependencies = [
  "dhat",
+ "lazy_static",
  "pico-args",
  "regex",
  "test-case",
