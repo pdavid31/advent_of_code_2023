@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 advent_of_code::solution!(5);
 
 struct Map {
@@ -24,13 +26,17 @@ impl Mapping {
     }
 
     fn map(&self, value: u64) -> u64 {
-        for map in &self.0 {
-            if map.contains_source(value) {
-                return map.map(value);
-            }
-        }
+        // check of any of the maps inside contains the value
+        let map_opt = self.0.par_iter().find_any(|x| x.contains_source(value));
 
-        value
+        // if it is included in one of the map,
+        // use this map to compute the new destination value,
+        // otherwise return the initial value
+        if let Some(map) = map_opt {
+            map.map(value)
+        } else {
+            value
+        }
     }
 }
 
@@ -125,13 +131,13 @@ pub fn part_two(input: &str) -> Option<u32> {
         // collect them to vec
         .collect();
 
-    // TODO: does not work well, collecting ranges is very slow
     let mut ids: Vec<u64> = identifier
+        .par_iter()
         .chunks(2)
         .map(|chunk| {
-            let start = chunk.first().unwrap();
+            let start = chunk.first().unwrap().clone();
             let length = chunk.last().unwrap();
-            let stop = start + length;
+            let stop = *start + *length;
 
             (*start..stop).collect::<Vec<u64>>()
         })
